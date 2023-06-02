@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b978b7834530ee479d9ef2f6324bd8b, type: 3}
+  m_Name: PantData
+  m_EditorClassIdentifier: 
+  values:
+  - {fileID: 2100000, guid: 33d6b1832595a104fafe34bed6bf175c, type: 2}
+  - {fileID: 2100000, guid: 6fd048df357201c4195f75ddcafc86e2, type: 2}
+  - {fileID: 2100000, guid: 4d454601ee729d64eb80b2a9634a43a6, type: 2}
+  - {fileID: 2100000, guid: 2d07d6d3704932a45a605670e76259fa, type: 2}
+  - {fileID: 2100000, guid: 1cd76f4ad63a36c4ea8f37c8b0400caf, type: 2}
+  - {fileID: 2100000, guid: 847f8da7b0a4dfa479017fa84d72715c, type: 2}
+  - {fileID: 2100000, guid: b8f91f481fdfc8a40890ac899ba9d635, type: 2}
+  - {fileID: 2100000, guid: 056b15068579f8c4e8a1d1cac602f8dd, type: 2}
+  - {fileID: 2100000, guid: 028c793641566dd45a0c43a01161f8b8, type: 2}
+  dataPath: Materials/Pants
+  EnumValues: 'Pant_1 = 0,
+
+    Pant_2 = 1,
+
+    Pant_3 = 2,
+
+    Pant_4 = 3,
+
+    Pant_5
+    = 4,
+
+    Pant_6 = 5,
+
+    Pant_7 = 6,
+
+    Pant_8 = 7,
+
+    Pant_9 = 8,
+
+'

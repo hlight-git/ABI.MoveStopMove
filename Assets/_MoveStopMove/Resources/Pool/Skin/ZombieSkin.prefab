@@ -1,0 +1,122 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &5523074477378361361
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1002868763738815686}
+  - component: {fileID: 2381586503033599278}
+  m_Layer: 0
+  m_Name: ZombieSkin
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1002868763738815686
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5523074477378361361}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.593076, y: 0.466071, z: -11.9959755}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 1821095695760816208}
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2381586503033599278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5523074477378361361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6cc5346e0aed67c4cb020d29686999f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  poolType: 3007
+  bodyRenderer: {fileID: 7395410608005872285}
+  animator: {fileID: 2220113674899610881}
+  isntBodySet: 0
+--- !u!1001 &1361060304657636139
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 1002868763738815686}
+    m_Modifications:
+    - target: {fileID: 66834281042835905, guid: e774e27cff071c8478dfab5f716673f0, type: 3}
+      propertyPath: m_Name
+      value: ZombieBody
+      objectReference: {fileID: 0}
+    - target: {fileID: 839536227476579195, guid: e774e27cff071c8478dfab5f716673f0, type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 839536227476579195, guid: e774e27cff071c8478dfab5f716673f0, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.73
+      objectReference: {fileID: 0}
+    - target: {fileID: 839536227476579195, guid: e774e27cff071c8478dfab5f716673f0, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 839536227476579195, guid: e774e27cff071c8478dfab5f716673f0, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 839536227476579195, guid: e774e27cff071c8478dfab5f716673f0, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 839536227476579195, guid: e774e27cff071c8478dfab5f716673f0, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 839536227476579195, guid: e774e27cff071c8478dfab5f716673f0, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 839536227476579195, guid: e774e27cff071c8478dfab5f716673f0, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 839536227476579195, guid: e774e27cff071c8478dfab5f716673f0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 839536227476579195, guid: e774e27cff071c8478dfab5f716673f0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 839536227476579195, guid: e774e27cff071c8478dfab5f716673f0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e774e27cff071c8478dfab5f716673f0, type: 3}
+--- !u!4 &1821095695760816208 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 839536227476579195, guid: e774e27cff071c8478dfab5f716673f0, type: 3}
+  m_PrefabInstance: {fileID: 1361060304657636139}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &2220113674899610881 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 877103228001453610, guid: e774e27cff071c8478dfab5f716673f0, type: 3}
+  m_PrefabInstance: {fileID: 1361060304657636139}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &7395410608005872285 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 8377456036807221686, guid: e774e27cff071c8478dfab5f716673f0, type: 3}
+  m_PrefabInstance: {fileID: 1361060304657636139}
+  m_PrefabAsset: {fileID: 0}

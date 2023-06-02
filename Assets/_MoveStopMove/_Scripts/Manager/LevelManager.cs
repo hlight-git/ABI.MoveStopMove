@@ -1,221 +1,231 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.Events;
+using UnityEngine.SocialPlatforms.Impl;
 
 public class LevelManager : Singleton<LevelManager>
 {
-    public Player player;
-
-    private List<Bot> bots = new List<Bot>();
-
     [SerializeField] Level[] levels;
-    public Level currentLevel;
 
-    private int totalBot;
-    private bool isRevive;
+    private readonly List<Bot> bots = new List<Bot>();
+    private List<UnitColor> notActiveColors;
+    private int botRemain;
+    private bool isRevived;
 
-    private int levelIndex;
-
-    public int TotalCharater => totalBot + bots.Count + 1;
+    public Player Player;
+    public int Alives => botRemain + bots.Count + 1;
+    public Level CurrentLevel { get; private set; }
+    public List<ICharacter> PlayingCharacter { get; private set; }
 
     public void Start()
     {
-        levelIndex = 0;
-        OnLoadLevel(levelIndex);
         OnInit();
     }
-
+    public void OnStartNormalMode()
+    {
+        Player.SetName(UserData.Ins.Name);
+        SetTargetIndicatorsAlpha(1);
+    }
+    public void OnInitBots()
+    {
+        for (int i = 0; i < CurrentLevel.MaxActiveBotLimit; i++)
+        {
+            NewBot();
+        }
+        botRemain = CurrentLevel.TotalCharacterAmount - bots.Count - 1;
+    }
+    void NewBot()
+    {
+        Bot bot = SimplePool.Spawn<Bot>(PoolType.Bot, RandomSpawnPoint(), Quaternion.identity);
+        bot.OnSpawn();
+        bot.AddScore(Mathf.Clamp(Player.Score > 0 ? Random.Range(Player.Score - 2, Player.Score + 5) : Random.Range(0, 2), 0, CurrentLevel.TotalCharacterAmount / 2));
+        bot.DodgingLevel = Alives < CurrentLevel.TotalCharacterAmount / 3 ? 1 : 2f * bot.Score / CurrentLevel.TotalCharacterAmount;
+        bot.ChangeColor(Util.Choice(notActiveColors));
+        bot.OnDeathEvents -= OnBotDeath;
+        bot.OnDeathEvents += OnBotDeath;
+        notActiveColors.Remove(bot.Color);
+        if (GameManager.Ins.IsPlaying && Util.RandomBool(2/3f))
+        {
+            bot.RoamOrChase();
+        }
+        bots.Add(bot);
+        PlayingCharacter.Add(bot);
+    }
+    void OnInitPlayer()
+    {
+        Player.OnSpawn();
+        Player.AddScore(0);
+        Player.OnDeathEvents -= OnPlayerDeath;
+        Player.OnDeathEvents += OnPlayerDeath;
+        notActiveColors.Remove(Player.Color);
+    }
     public void OnInit()
     {
-        player.OnInit();
-
-        for (int i = 0; i < currentLevel.MaxActiveBotLimit; i++)
-        {
-            NewBot(null);
-        }
-
-        totalBot = currentLevel.TotalCharacterAmount - currentLevel.MaxActiveBotLimit - 1;
-
-        isRevive = false;
-
-        SetTargetIndicatorAlpha(0);
+        LoadCurrentLevel();
+        isRevived = false;
+        notActiveColors = new List<UnitColor>(Constant.Prototype.UNIT_COLORS);
+        PlayingCharacter = new List<ICharacter> { Player };
+        OnInitPlayer();
+        OnInitBots();
     }
+    public void OnPlayerDeath(ICharacter player)
+    {
+        SoundManager.Ins.PlayAtPosition(SoundManager.Ins.RangerDeath, player.TF.position);
+        UIManager.Ins.CloseAll();
 
+        if (!isRevived)
+        {
+            isRevived = true;
+            UIManager.Ins.OpenUI<UIRevive>();
+        }
+        else
+        {
+            Fail();
+        }
+    }
+    void CreateBoosterBox()
+    {
+        if (Util.RandomBool(0.1f))
+        {
+            Vector3 spawnPoint = RandomPoint();
+            spawnPoint.y = 0;
+            SimplePool.Spawn<RangerBoosterBox>(PoolType.RangerBoosterBox, spawnPoint, Quaternion.identity).OnSpawn();
+        }
+    }
+    public void OnBotDeath(ICharacter bot)
+    {
+        CreateBoosterBox();
+        SoundManager.Ins.PlayAtPosition(SoundManager.Ins.RangerDeath, bot.TF.position);
+
+        PlayingCharacter.Remove(bot);
+        bots.Remove((Bot)bot);
+        notActiveColors.Add(bot.Color);
+        if (botRemain > 0)
+        {
+            botRemain--;
+            NewBot();
+            //Invoke(nameof(NewBot), GameConstant.Character.BOT_REVIVE_TIME);
+        }
+        if (botRemain == 0 && bots.Count == 0)
+        {
+            Victory();
+        }
+        UIManager.Ins.GetUI<UIGameplay>().UpdateTotalCharacter();
+    }
     public void OnReset()
     {
-        player.OnDespawn();
+        Player.OnDespawn();
         for (int i = 0; i < bots.Count; i++)
         {
             bots[i].OnDespawn();
         }
-
         bots.Clear();
         SimplePool.CollectAll();
     }
-
+    public void ReturnMainMenu()
+    {
+        CancelInvoke();
+        UIManager.Ins.CloseAll();
+        GameManager.Ins.ChangeState(GameState.MainMenu);
+        OnReset();
+        OnInit();
+        UIManager.Ins.OpenUI<UIMainMenu>();
+    }
     public void OnLoadLevel(int level)
     {
-        if (currentLevel != null)
+        if (CurrentLevel != null)
         {
-            Destroy(currentLevel.gameObject);
+            Destroy(CurrentLevel.gameObject);
         }
 
-        currentLevel = Instantiate(levels[level]);
+        CurrentLevel = Instantiate(levels[level]);
+        botRemain = CurrentLevel.TotalCharacterAmount - 1;
     }
-
-    public Vector3 RandomPoint()
+    public Vector3 RandomPoint() => CurrentLevel.RandomPosition();
+    Vector3? TrySpawnAtSpawnPoint(float size)
     {
-        Vector3 randPoint = Vector3.zero;
-
-        float size = Character.ATT_RANGE + Character.MAX_SIZE + 1f;
-
-        for (int t = 0; t < 50; t++)
+        for (int i = 0; i < CurrentLevel.SpawnPoints.Count; i++)
         {
-
-            randPoint = currentLevel.RandomPosition();
-            if (Vector3.Distance(randPoint, player.TF.position) < size)
+            bool meetOther = false;
+            for (int j = 0; j < PlayingCharacter.Count; j++)
             {
-                continue;
-            }
-
-            for (int j = 0; j < 20; j++)
-            {
-                for (int i = 0; i < bots.Count; i++)
+                if (Vector3.Distance(CurrentLevel.SpawnPoints[i].position, PlayingCharacter[j].TF.position) < size)
                 {
-                    if (Vector3.Distance(randPoint, bots[i].TF.position) < size)
-                    {
-                        break;
-                    }
-                }
-
-                if (j == 19)
-                {
-                    return randPoint;
+                    meetOther = true;
+                    break;
                 }
             }
-
-
+            if (!meetOther)
+            {
+                return CurrentLevel.NavMeshSamplePosition(CurrentLevel.SpawnPoints[i].position);
+            }
         }
-
-        return randPoint;
+        return null;
     }
-
-    private void NewBot(IState<Bot> state)
+    Vector3? TrySpawnAtRandomPoint(float size)
     {
-        Bot bot = SimplePool.Spawn<Bot>(PoolType.Bot, RandomPoint(), Quaternion.identity);
-        bot.OnInit();
-        bot.ChangeState(state);
-        bots.Add(bot);
-
-        bot.SetScore(player.Score > 0 ? Random.Range(player.Score - 7, player.Score + 7) : 1);
+        for (int tryTime = 0; tryTime < 50; tryTime++)
+        {
+            Vector3 result = RandomPoint();
+            bool meetOther = false;
+            for (int j = 0; j < PlayingCharacter.Count; j++)
+            {
+                if (Vector3.Distance(result, PlayingCharacter[j].TF.position) < size)
+                {
+                    meetOther = true;
+                    break;
+                }
+            }
+            if (!meetOther)
+            {
+                return result;
+            }
+        }
+        return null;
     }
-
-    public void CharecterDeath(Character c)
+    public Vector3 RandomSpawnPoint()
     {
-        if (c is Player)
-        {
-            UIManager.Ins.CloseAll();
-
-            //revive
-            if (!isRevive)
-            {
-                isRevive = true;
-                UIManager.Ins.OpenUI<UIRevive>();
-            }
-            else
-            {
-                Fail();
-            }
-        }
-        else
-        if (c is Bot)
-        {
-            bots.Remove(c as Bot);
-
-            if (GameManager.Ins.IsState(GameState.Revive) || GameManager.Ins.IsState(GameState.Setting))
-            {
-                if (Utilities.Chance(50, 100))
-                {
-                    NewBot(new IdleState());
-                } else
-                {
-                    NewBot(new PatrolState());
-                }
-            }
-            else
-            {
-                if (totalBot > 0)
-                {
-                    totalBot--;
-                    if (Utilities.Chance(50, 100))
-                    {
-                        NewBot(new IdleState());
-                    }
-                    else
-                    {
-                        NewBot(new PatrolState());
-                    }
-                }
-
-                if (bots.Count == 0)
-                {
-                    Victory();
-                }
-            }
-
-        }
-
-        UIManager.Ins.GetUI<UIGameplay>().UpdateTotalCharacter();
+        float size = Constant.Ranger.DEFAULT_ATTACK_RANGE + Constant.Ranger.MAX_SIZE + 1f;
+        Vector3? spawnPoint = (TrySpawnAtSpawnPoint(size) ?? TrySpawnAtRandomPoint(size)) ?? RandomPoint();
+        return spawnPoint.Value;
     }
 
     private void Victory()
     {
         UIManager.Ins.CloseAll();
-        UIManager.Ins.OpenUI<UIVictory>().SetCoin(player.Coin);
-        player.ChangeAnim(Constant.ANIM_WIN);
+        UIManager.Ins.OpenUI<UIVictory>().SetCoin(Player.Coin);
+        Player.Cheering();
     }
 
     public void Fail()
     {
         UIManager.Ins.CloseAll();
-        UIManager.Ins.OpenUI<UIFail>().SetCoin(player.Coin); 
-    }
-
-    public void Home()
-    {
-        UIManager.Ins.CloseAll();
-        OnReset();
-        OnLoadLevel(levelIndex);
-        OnInit();
-        UIManager.Ins.OpenUI<UIMainMenu>();
+        UIManager.Ins.OpenUI<UIFail>().SetCoin(Player.Coin);
     }
 
     public void NextLevel()
     {
-        levelIndex++;
+        UserData.Ins.SetIntData(UserData.KEY_LEVEL, ref UserData.Ins.Level, UserData.Ins.Level + 1);
     }
-
-    public void OnPlay()
+    public void LoadCurrentLevel()
     {
-        for (int i = 0; i < bots.Count; i++)
-        {
-            bots[i].ChangeState(new PatrolState());
-        }
+        OnLoadLevel(UserData.Ins.Level);
     }
 
     public void OnRevive()
     {
-        player.TF.position = RandomPoint();
-        player.OnRevive();
+        Player.TF.position = RandomPoint();
+        Player.OnRevive();
     }
 
-    public void SetTargetIndicatorAlpha(float alpha)
+    public void SetTargetIndicatorsAlpha(float alpha)
     {
-        List<GameUnit> list = SimplePool.GetAllUnitIsActive(PoolType.TargetIndicator);
-
-        for (int i = 0; i < list.Count; i++)
+        for (int i = 0; i < PlayingCharacter.Count; i++)
         {
-            (list[i] as TargetIndicator).SetAlpha(alpha);
+            PlayingCharacter[i].SetIndicatorAlpha(alpha);
         }
     }
 }

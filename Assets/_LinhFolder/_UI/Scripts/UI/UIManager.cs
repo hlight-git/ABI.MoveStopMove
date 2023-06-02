@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class UIManager : UIExample.Singleton<UIManager>
+public class UIManager : Singleton<UIManager>
 {
     //dict for quick query UI prefab
     //dict dung de lu thong tin prefab canvas truy cap cho nhanh
